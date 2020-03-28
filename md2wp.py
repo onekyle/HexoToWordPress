@@ -3,7 +3,7 @@
 @Author: Kyle
 @Date: 2020-03-05 08:34:04
 @LastEditors: Kyle
-@LastEditTime: 2020-03-28 01:33:34
+@LastEditTime: 2020-03-28 01:36:20
 @Description: 
 @FilePath: /MarkdownToWordPress/md2wp.py
 '''
@@ -37,19 +37,16 @@ def run(path: str, imgname: str, wp: Client):
 
     # convert
     post_content_html = convertMd2HTML(post_content)
+
     # publish
-    # 现在就很简单了，通过下面的函数，将刚才获取到数据赋给对应的位置
     post = WordPressPost()
     post.title = post_title
     post.date = post_date
-    # print(post_title)
-    # post.slug文章别名
-    # 我网站使用%postname%这种固定链接不想一长串，这里是最初md文章URL的参数，英文连字符格式
-    # post.slug = post_url
 
     post.thumbnail = uploadImageIfNeed(imgname, wp=wp)
     # print("上传图片成功. id=" + post.thumbnail)
     post.content = post_content_html
+
     # 分类和标签
     terms_names = {}
     terms_names['post_tag'] = post_tags

@@ -3,7 +3,7 @@
 @Author: Kyle
 @Date: 2020-03-06 13:57:33
 @LastEditors: Kyle
-@LastEditTime: 2020-03-28 01:34:26
+@LastEditTime: 2020-03-28 11:07:43
 @Description: 
 @FilePath: /MarkdownToWordPress/unsplash_crawler.py
 '''
@@ -20,20 +20,20 @@ import threading
 
 
 def run(key: str):
-    url = 'https://unsplash.com/napi/search/photos?query=' + \
-        key + '&xp=&order_by=latest&per_page=29&page=1'
+    url = f'https://unsplash.com/napi/search/photos?query={key}&xp=&order_by=latest&per_page={count}&page=1'
     reponse = requests.get(url)
     if reponse.status_code != 200:
         print('访问失败, 请检查网络')
         return
     html_str = reponse.content.decode()
-    results = json.loads(html_str)['results']
+    results = json.loads(html_str)["results"]
+    # ['results']
     # imgurls = []
     for r in results:
         urlencode = r['urls']['regular']
         url = unquote(urlencode)
         img_id = r['id']
-        save_path = image_dir_path + "/" + img_id
+        save_path = f'{image_dir_path}/{img_id}.jpg'
         # imgurls.append(url)
         download_thead = threading.Thread(
             target=downlaodImg, args=(url, save_path,))
@@ -48,6 +48,6 @@ def downlaodImg(url: str, save_path: str) -> str:
 
 
 if __name__ == "__main__":
-    global image_dir_path
     image_dir_path = sys.argv[1]
+    count = 10
     run('landscape')
