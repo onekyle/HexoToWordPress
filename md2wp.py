@@ -3,7 +3,7 @@
 @Author: Kyle
 @Date: 2020-03-05 08:34:04
 LastEditors: Kyle
-LastEditTime: 2021-04-01 21:08:22
+LastEditTime: 2021-04-01 21:27:55
 @Description: 
 FilePath: /MarkdownToWordPress/md2wp.py
 '''
@@ -108,16 +108,17 @@ def thumbnailImgNameForIndex(index: int) -> str:
 
 if __name__ == "__main__":
     global args_img_path
-    if wordpress_xmlrcpath is None or wordpress_user_name is None or wordpress_user_passwd is None:
-        raise ValueError("please set yourself wordpress configuration items")
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "path", type=str, help="markdown file path or the folder path that contains markdown files")
 
     parser.add_argument("thumbnai", type=str, nargs='?',
-                        help="post thumbnail's path, or the folder path that contains thumbnail files, only support jpg image type")
+                        help="optional, post thumbnail's path, or the folder path that contains thumbnail files, only support jpg image type")
     pargs = parser.parse_args()
+
+    if wordpress_xmlrcpath is None or wordpress_user_name is None or wordpress_user_passwd is None:
+        raise ValueError("please set yourself wordpress configuration items")
+
     args_path = pargs.path
     useModeAll = os.path.isdir(args_path)
 
