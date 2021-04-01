@@ -2,13 +2,14 @@
 '''
 @Author: Kyle
 @Date: 2020-03-05 08:34:04
-@LastEditors: Kyle
-@LastEditTime: 2020-03-28 01:36:20
+LastEditors: Kyle
+LastEditTime: 2021-04-01 21:08:22
 @Description: 
-@FilePath: /MarkdownToWordPress/md2wp.py
+FilePath: /MarkdownToWordPress/md2wp.py
 '''
 
 import sys
+import argparse
 import markdown
 import frontmatter
 import datetime
@@ -20,7 +21,20 @@ import os
 import re
 from urllib.request import urlretrieve
 import threading
-import resize_image
+from enum import IntEnum
+
+# 配置你自己的地址 账号密码
+wordpress_xmlrcpath: str = None  # 'https://blog.1kye.com/xmlrpc.php'
+wordpress_user_name: str = None  # 'YourName'
+wordpress_user_passwd: str = None  # 'Password'
+
+image_dir_path: str = None
+
+
+class ThumbnailAddMode(IntEnum):
+    NONE = 0
+    SINGLE = 1
+    FILESMATCH = 2
 
 
 def run(path: str, imgname: str, wp: Client):
@@ -29,9 +43,10 @@ def run(path: str, imgname: str, wp: Client):
     # 将获取到的信息赋值给变量
     # print(post.metadata)
     post_title = post.metadata.get('title', None)
+
     post_tags = post.metadata.get('tags', None)
     post_category = post.metadata.get('category', None)
-    date = post.metadata.get('date', datetime.date.today())
+    date = post.metadata.get('date', datetime.datetime.today())
     post_date = date
     post_content = post.content
 
@@ -60,6 +75,8 @@ def run(path: str, imgname: str, wp: Client):
 
 
 def uploadImageIfNeed(imageName: str, wp: Client):
+    if imageName is None or image_dir_path is None:
+        return None
     fileName = image_dir_path+imageName
     if not os.path.exists(fileName):
         return None
@@ -80,33 +97,82 @@ def convertMd2HTML(content: str) -> str:
     return post_content_html
 
 
-wordpress_xmlrcpath = 'https://blog.1kye.com/xmlrpc.php'
-wordpress_user_name = 'YourName'
-wordpress_user_passwd = 'Password'
-# 缩略图保存的目录
-image_dir_path = './md-images/'
+def thumbnailImgNameForIndex(index: int) -> str:
+    if image_mode == ThumbnailAddMode.NONE:
+        return None
+    elif image_mode == ThumbnailAddMode.SINGLE:
+        return imgNames[0]
+    else:
+        return imgNames[index]
+
 
 if __name__ == "__main__":
-    # 获得md文章路径信息
-    dir = sys.argv[1]
-    print(dir)
-    os.makedirs(image_dir_path, exist_ok=True)
-    imgNames = []
-    for imgname in os.listdir(image_dir_path):
-        if not imgname.endswith('.jpg'):
-            continue
-        imgNames.append(imgname)
+    global args_img_path
+    if wordpress_xmlrcpath is None or wordpress_user_name is None or wordpress_user_passwd is None:
+        raise ValueError("please set yourself wordpress configuration items")
 
-    use_thumbnail = len(imgNames) is not 0
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "path", type=str, help="markdown file path or the folder path that contains markdown files")
+
+    parser.add_argument("thumbnai", type=str, nargs='?',
+                        help="post thumbnail's path, or the folder path that contains thumbnail files, only support jpg image type")
+    pargs = parser.parse_args()
+    args_path = pargs.path
+    useModeAll = os.path.isdir(args_path)
+
+    args_img_path = None
+    imgNames = []
+
+    # 图片资源模式判断, 并获取相应所需 imgName
+    if args_img_path is None:
+        image_mode = ThumbnailAddMode.NONE
+    elif os.path.isdir(args_img_path):
+        image_dir_path = os.path.dirname(args_img_path)
+        img_files = os.listdir(args_img_path)
+        img_files.sort(key=lambda x: int(x[:-4]))
+        for imgname in img_files:
+            if not imgname.endswith('.jpg'):
+                continue
+            imgNames.append(imgname)
+        if len(imgNames) == 0:
+            image_mode = ThumbnailAddMode.NONE
+        elif len(imgNames) == 1:
+            image_mode = ThumbnailAddMode.SINGLE
+        else:
+            image_mode = ThumbnailAddMode.FILESMATCH
+    elif os.path.isfile(args_img_path):
+        image_dir_path = os.path.dirname(args_img_path)
+        if args_img_path.endswith('.jpg'):
+            image_mode = ThumbnailAddMode.SINGLE
+            imgNames.append(os.path.basename(args_img_path))
+        else:
+            image_mode = ThumbnailAddMode.NONE
+            print("-WARNGIN, single thumbnail image file type error, will not upload")
+
+    if image_mode == ThumbnailAddMode.FILESMATCH and not useModeAll:
+        raise ValueError(
+            "use wrong thumbnail path, please specify which thumbnail path to use")
+
+    # print(f"args_path: {args_path}, args_img_path: {args_img_path}, image_dir_path: {image_dir_path}, imgMode: {image_mode}, imgNames: {imgNames}")
+    
+    # markdown 当前模式判断
+    if useModeAll:
+        md_filespaths = os.listdir(args_path)
+    else:
+        md_filespaths = [os.path.basename(args_path)]
+        args_path = os.path.dirname(args_path)
+
+    
+    wp = Client(wordpress_xmlrcpath, wordpress_user_name,
+                wordpress_user_passwd)
     index = 0
-    wp = Client(wordpress_xmlrcpath,
-                wordpress_user_name, wordpress_user_passwd)
-    for i in os.listdir(dir):
+    for i in md_filespaths:
         if not i.endswith('.md'):
             continue
-        path = dir+"/"+i
+        path = os.path.join(args_path, i)
         try:
-            run(path, imgNames[index] if use_thumbnail else None, wp=wp)
+            run(path, thumbnailImgNameForIndex(i), wp=wp)
         except:
-            print("faild: "+path)
+            print("-ERROR faild upload post with path: "+path)
         index += 1
