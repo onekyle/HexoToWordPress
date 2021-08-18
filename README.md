@@ -1,4 +1,4 @@
-# HexoToWordPress
+# HexoToWordPress ![python3.7](https://img.shields.io/badge/python-3.7-blue)
 
 Convert your hexo markdown posts to html then publish to your wordpress blog.
 
