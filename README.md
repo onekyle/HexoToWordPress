@@ -56,4 +56,4 @@ optional arguments:
   -h, --help  show this help message and exit
 ```
 ## 如果你在天朝
-[从Hexo迁移到WordPress](https://blog.1kye.com/2020/03/28/%e4%bb%8ehexo%e8%bf%81%e7%a7%bb%e5%88%b0wordpress/)
+[从Hexo迁移到WordPress](https://blog.1kye.com/?p=455)
