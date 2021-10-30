@@ -174,6 +174,7 @@ if __name__ == "__main__":
         path = os.path.join(args_path, i)
         try:
             run(path, thumbnailImgNameForIndex(i), wp=wp)
-        except:
+        except Exception as err:
+            print(err)
             print("-ERROR faild upload post with path: "+path)
         index += 1
