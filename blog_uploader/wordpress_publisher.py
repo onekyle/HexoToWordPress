@@ -1,3 +1,4 @@
+import os
 from wordpress_xmlrpc import Client, WordPressPost
 from wordpress_xmlrpc.methods.posts import NewPost
 from wordpress_xmlrpc.compat import xmlrpc_client
@@ -25,7 +26,7 @@ def upload_image_if_needed(image_name):
         return None
     with open(image_name, 'rb') as img:
         imageData = {
-            'name': image_name,
+            'name': os.path.basename(image_name),
             'type': 'image/jpeg',
             'bits': xmlrpc_client.Binary(img.read()),
         }
