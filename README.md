@@ -2,6 +2,24 @@
 
 Convert your hexo markdown posts to html then publish to your wordpress blog.
 
+## 中文
+[从Hexo迁移到WordPress](https://blog.1kye.com/277)
+
+## Project file structure
+```zsh
+├── .env
+├── .gitignore
+├── LICENSE
+├── README.md
+├── blog_uploader
+│   ├── __init__.py
+│   ├── config.py
+│   ├── main.py
+│   ├── markdown_parser.py
+│   └── wordpress_publisher.py
+└── image_scraper.py
+```
+
 ## Markdown file format
 Before use this script, you should make sure your post was created by hexo command or it has a hexo post format:
 ```markdown
@@ -15,45 +33,48 @@ tags: [Python]
 ```
 
 ## Usage
+### upload blog
 
 install python-wordpress-xmlrpc
-```
+```python
 pip install python-wordpress-xmlrpc
 ```
 read the [python-wordpress-xmlrpc doc](https://python-wordpress-xmlrpc.readthedocs.io/en/latest/) to get the your wordpress xmlrcpath.
 
-fill your xmlrcpath, user name and passwd in md2wp.py.
+fill your xmlrcpath, user name and passwd in .env.
 
 ```
-wordpress_xmlrcpath: str = 'https://blog.1kye.com/xmlrpc.php'
-wordpress_user_name: str = 'YourName'
-wordpress_user_passwd: str = 'Password'
+WORDPRESS_XMLRCPATH=https://blog.1kye.com/xmlrpc.php
+WORDPRESS_USER_NAME=YourName
+WORDPRESS_USER_PASSWD=Password
 ```
 
 then you can upload your post to your wordpress blog.
 
-upload single hexo post
-```
-python3 md2wp.py markdown_file
-```
-
-upload whole hexo post folder
-```
-python3 md2wp.py YourHexoPath/source/_posts
+```python
+python -m blog_uploader.main file
 ```
 
-
-```
-usage: md2wp.py [-h] path [thumbnai]
+### upload blog with image
+#### download images
+```zsh
+usage: image_scraper.py [-h] [-s STYLE] [-n COUNT] dir
 
 positional arguments:
-  path        markdown file path or the folder path that contains markdown
-              files
-  thumbnai    optional, post thumbnail's path, or the folder path that contains
-              thumbnail files, only support jpg image type
+  dir                   存储图片目录
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  -s STYLE, --style STYLE
+                        下载图片的风格
+  -n COUNT, --count COUNT
+                        批量下载的个数
 ```
-## 如果你在天朝
-[从Hexo迁移到WordPress](https://blog.1kye.com/?p=455)
+```python
+python image_scraper.py imgs -s code -n 10
+```
+
+#### upload blog 
+```python
+python -m blog_uploader.main mds imgs
+```
