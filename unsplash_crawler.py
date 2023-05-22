@@ -2,14 +2,15 @@
 '''
 @Author: Kyle
 @Date: 2020-03-06 13:57:33
-@LastEditors: Kyle
-@LastEditTime: 2020-03-28 11:07:43
+LastEditors: Kyle
+LastEditTime: 2023-05-21 19:18:20
 @Description: 
-@FilePath: /MarkdownToWordPress/unsplash_crawler.py
+FilePath: /HexoToWordPress/unsplash_crawler.py
 '''
 
 import sys
 import requests
+import argparse
 import json
 from urllib.parse import unquote
 from urllib.request import urlretrieve
@@ -48,6 +49,19 @@ def downlaodImg(url: str, save_path: str) -> str:
 
 
 if __name__ == "__main__":
-    image_dir_path = sys.argv[1]
-    count = 10
-    run('landscape')
+    parser = argparse.ArgumentParser()
+
+    # 添加目录参数
+    parser.add_argument('dir', help='存储图片目录')
+
+    # 添加风格参数
+    parser.add_argument('-s', '--style', default='landscape', help='下载图片的风格')
+
+    # 添加个数参数
+    parser.add_argument('-n', '--count', type=int, default=10, help='批量下载的个数')
+
+    args = parser.parse_args()
+
+    image_dir_path = args.dir
+    count = args.count
+    run(args.style)
